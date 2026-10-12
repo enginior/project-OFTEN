@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/*
+ * Hephaestus' Automaton — design tokens.
+ * Volcanic, industrial, high-contrast: forge charcoal surfaces,
+ * bone text, ember and brass accents. Square corners throughout.
+ */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-oswald), var(--font-inter), ui-sans-serif, sans-serif;
+
+  /* Backgrounds: forge charcoal ramp */
+  --color-forge-950: #0a0806;
+  --color-forge-900: #110e0b;
+  --color-forge-850: #171310;
+  --color-forge-800: #1d1915;
+  --color-forge-700: #2a241d;
+  --color-forge-600: #3a3128;
+
+  /* Borders and muted text: iron and ash */
+  --color-iron-600: #55493d;
+  --color-iron-500: #6f6457;
+  --color-iron-400: #8a7e70;
+  --color-ash-300: #b3a797;
+  --color-ash-200: #d2c7b6;
+
+  /* Primary text: warm bone */
+  --color-bone-100: #efe8db;
+  --color-bone-50: #f8f4ec;
+
+  /* Accents: molten ember, restrained brass, ember red */
+  --color-ember-300: #ffa257;
+  --color-ember-400: #ff7a29;
+  --color-ember-500: #f0570c;
+  --color-ember-600: #cc440a;
+  --color-ember-700: #a33506;
+  --color-brass-400: #d9ab52;
+  --color-brass-500: #c0913a;
+  --color-brass-600: #9a7328;
+  --color-emberred-500: #c2402a;
+
+  /* Engineering: square corners everywhere */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-forge-950 font-sans text-bone-100 antialiased;
+  }
+
+  ::selection {
+    @apply bg-ember-500 text-forge-950;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember-400);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-semibold tracking-tight;
+  }
+
+  a {
+    @apply underline-offset-4;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Primary solid action: hot ember plate */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 border border-ember-500 bg-ember-500 px-5 py-2.5 font-display text-sm font-semibold tracking-wide text-forge-950 uppercase transition-colors;
+  }
+  .btn-primary:hover {
+    @apply bg-ember-400 border-ember-400;
+  }
+
+  /* Secondary outline action: iron plate */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 border border-iron-600 bg-transparent px-5 py-2.5 font-display text-sm font-semibold tracking-wide text-bone-100 uppercase transition-colors;
+  }
+  .btn-secondary:hover {
+    @apply border-ash-300 bg-forge-800;
+  }
+
+  /* Form field: machined input */
+  .field {
+    @apply w-full border border-iron-600 bg-forge-900 px-4 py-2.5 text-bone-100 placeholder:text-iron-400;
+  }
+  .field:focus {
+    @apply border-ember-500 outline-none;
+  }
+}
