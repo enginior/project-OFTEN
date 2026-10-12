@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: hephaestus-db
+    environment:
+      POSTGRES_USER: hephaestus
+      POSTGRES_PASSWORD: hephaestus
+      POSTGRES_DB: hephaestus
+    ports:
+      # Host port 5433 to avoid clashing with any local Postgres on 5432.
+      - "5433:5432"
+    volumes:
+      - hephaestus-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hephaestus -d hephaestus"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  hephaestus-db-data:

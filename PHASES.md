@@ -17,17 +17,17 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 - [x] SEO baseline: metadata, Open Graph, favicon
 - [x] Verify: `lint`, `typecheck`, production `build`, smoke test all routes return 200
 
-## Phase 2 — Database architecture `[ ]`
+## Phase 2 — Database architecture `[x]`
 
-- [ ] Choose ORM (Drizzle recommended) and add dependencies
-- [ ] PostgreSQL schema: `entries`, `categories`, `tags`, `entry_tags` (unique slug constraints, indexes, FK integrity)
-- [ ] Entry fields per AGENTS.md data model: name, slug, summary, description, canonicalUrl, entryType, status, featured, timestamps + optional metadata
-- [ ] Docker Compose for local Postgres (never filesystem-backed storage)
-- [ ] Migrations via drizzle-kit (`generate` / `migrate` scripts)
-- [ ] Zod validation schemas shared by forms and server ops (HTTP(S)-only URL validation)
-- [ ] `.env.example` with placeholders only; `.env` gitignored
-- [ ] Seed script: demo categories/entries only, no admin credentials
-- [ ] Verify: migration applies to clean DB, typecheck, build
+- [x] Choose ORM (Drizzle) and add dependencies (`drizzle-orm`, `postgres`, `drizzle-kit`, `zod`)
+- [x] PostgreSQL schema: `users`, `entries`, `categories`, `tags`, `entry_tags` (unique slug constraints, indexes, FK integrity)
+- [x] Entry fields per AGENTS.md data model: name, slug, summary, description, canonicalUrl, entryType, status, featured, timestamps + optional metadata
+- [x] Docker Compose for local Postgres (never filesystem-backed storage)
+- [x] Migrations via drizzle-kit (`db:generate` / `db:migrate` scripts; first migration `drizzle/0000_yellow_turbo.sql`)
+- [x] Zod validation schemas shared by forms and server ops (`src/lib/validation.ts`, HTTP(S)-only URL validation)
+- [x] `.env.example` with placeholders only; `.env` gitignored
+- [x] Seed script (`npm run db:seed`): demo categories/entries only, no admin credentials, idempotent on slugs
+- [x] Verify: migration applied to clean DB, seed verified via psql (9 categories, 8 published + 1 draft entry, 0 users), `lint`, `typecheck`, `build`
 
 ## Phase 3 — Public directory & learn UI `[ ]`
 
@@ -76,3 +76,8 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 | Date | Phase | Checks run | Result |
 |---|---|---|---|
 | 2026-10-13 | 1 | `npm run lint`, `npm run typecheck`, `npm run build`, prod-server smoke test (all routes 200) | Pass |
+| 2026-10-13 | 2 | `npm run db:generate`, `npm run db:migrate` on clean DB, `npm run db:seed` (re-run safe), psql verification (5 tables, 9 categories, 9 entries incl. 1 draft, 0 users), `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+
+Fixes during Phase 2: replaced malformed `drizzle.config.ts` (exported a raw
+string instead of `defineConfig`, which broke drizzle-kit); corrected seed
+types to use Drizzle pgEnum value types instead of plain strings.
