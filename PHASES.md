@@ -39,17 +39,17 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 - [x] Sitemap, robots, canonical URLs; no draft/archived leakage
 - [x] Verify: build, published-only query tests, responsive check
 
-## Phase 4 — Admin authentication `[ ]`
+## Phase 4 — Admin authentication `[x]`
 
 - [x] Single-admin auth via established solution (jose HS256 JWT + bcryptjs)
 - [x] Secure HttpOnly, SameSite cookies; Secure in production
 - [x] Server-side session checks on every admin page and mutation route (`requireAdmin`)
 - [x] Password hashing with modern library (bcryptjs, cost 12)
-- [x] Rate-limited login endpoint (in-memory sliding window)
+- [x] Rate-limited login endpoint (in-memory sliding window, 5 attempts / 10 min per IP)
 - [x] `/admin/login` page; `src/proxy.ts` edge guard for unauthenticated `/admin*`
 - [x] Admin dashboard shell at `src/app/admin/(dashboard)/`
 - [x] One-time admin CLI (`npm run admin:create`) — never seeded
-- [ ] Verify: anonymous access blocked to `/admin*`, login round-trip, lint/typecheck/build
+- [x] Verify: Playwright E2E (`scripts/verify-auth.ts`) — 8/8 pass on dev and production builds
 
 ## Phase 5 — Admin CRUD `[ ]`
 
@@ -79,12 +79,15 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 |---|---|---|---|
 | 2026-10-13 | 1 | `npm run lint`, `npm run typecheck`, `npm run build`, prod-server smoke test (all routes 200) | Pass |
 | 2026-10-13 | 2 | `npm run db:generate`, `npm run db:migrate` on clean DB, `npm run db:seed` (re-run safe), psql verification (5 tables, 9 categories, 9 entries incl. 1 draft, 0 users), `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+| 2026-10-13 | 4 | Playwright E2E (`npx tsx scripts/verify-auth.ts`) 8/8 checks against `npm run dev` AND `npm run start` (port 3100): anonymous `/admin` → login redirect, wrong-password error, valid login → dashboard, HttpOnly SameSite=Lax cookie, sign-out → home, signed-out `/admin` → login. Plus `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+
+Fixes during Phase 4: `form action={fn}` on the login form turned a
+pre-hydration submit into a native POST the browser could not follow;
+switched to `fetch` + `router.push` (`handleSubmitAction` pattern) and
+made `handleSubmitAction` error-safe. Added `scripts/verify-auth.ts`
+(Playwright) as the durable auth regression suite; `playwright` kept as a
+devDependency for Phase 5 CRUD tests.
 
 Fixes during Phase 2: replaced malformed `drizzle.config.ts` (exported a raw
 string instead of `defineConfig`, which broke drizzle-kit); corrected seed
 types to use Drizzle pgEnum value types instead of plain strings.
-
-Phase 4 note: `bash` tool intermittently wedged during this phase, so
-`npm install` of `bcryptjs`/`jose` and the lint/typecheck/build verification
-still need to be run manually. Files are complete; Auth secret is
-`AUTH_SECRET` (see `.env.example`).

@@ -16,11 +16,10 @@ config({ path: ".env.local" });
 config({ path: ".env" });
 
 import { drizzle } from "drizzle-orm/postgres-js";
-import { eq } from "drizzle-orm";
 import postgres from "postgres";
 import bcrypt from "bcryptjs";
-import * as schema from "./schema";
-import { users } from "./schema";
+import * as schema from "../src/db/schema";
+import { users } from "../src/db/schema";
 
 function argValue(flag: string): string | undefined {
   const argv = process.argv;
@@ -57,7 +56,9 @@ const passwordHash = bcrypt.hashSync(password, 12);
 const client = postgres(connectionString, { max: 1 });
 const db = drizzle(client, { schema });
 
-try {
+// tsx compiles .ts as CJS when package.json lacks "type": "module", so the
+// entry point is a plain main() wrapper instead of top-level await.
+async function main() {
   const [user] = await db
     .insert(users)
     .values({ email, passwordHash })
@@ -72,9 +73,13 @@ try {
       ? `Admin account ready: ${user.email} (id: ${user.id})`
       : "Unexpected result — verify the users table manually."
   );
-} catch (error) {
-  console.error("Failed to create admin account:", error);
-  process.exitCode = 1;
-} finally {
-  await client.end();
 }
+
+main()
+  .catch((error) => {
+    console.error("Failed to create admin account:", error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await client.end();
+  });

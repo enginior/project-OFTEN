@@ -25,7 +25,7 @@ const loginSchema = z.object({
 // account exists (no user-enumeration timing oracle).
 let dummyHash: string | null = null;
 function getDummyHash(): string {
-  dummyHash ??= bcrypt.hashSync(crypto.randomUUID(), 12);
+  dummyHash ||= bcrypt.hashSync(crypto.randomUUID(), 12);
   return dummyHash;
 }
 
