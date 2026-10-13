@@ -61,15 +61,15 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 - [x] Clear success/error feedback; no stack traces or DB details exposed
 - [x] Verify: CRUD integration tests, authorization tests, lint/typecheck/build
 
-## Phase 6 — Deployment & documentation `[ ]`
+## Phase 6 — Deployment & documentation `[x]`
 
-- [ ] Vercel deployment steps (Git-connected, env vars configured)
-- [ ] Production database setup (Neon or Supabase)
-- [ ] README: install, dev, migrations, seed, lint/test/build commands
-- [ ] First-admin creation procedure (secure, no default credentials)
-- [ ] Backup/export and restore notes
-- [ ] Final sweep: lint, typecheck, tests, production build pass
-- [ ] Verify: full Definition of Done checklist in AGENTS.md reviewed
+- [x] Vercel deployment steps (Git-connected, env vars configured)
+- [x] Production database setup (Neon or Supabase)
+- [x] README: install, dev, migrations, seed, lint/test/build commands
+- [x] First-admin creation procedure (secure, no default credentials)
+- [x] Backup/export and restore notes
+- [x] Final sweep: lint, typecheck, tests, production build pass
+- [x] Verify: full Definition of Done checklist in AGENTS.md reviewed
 
 ---
 
@@ -81,6 +81,12 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 | 2026-10-13 | 2 | `npm run db:generate`, `npm run db:migrate` on clean DB, `npm run db:seed` (re-run safe), psql verification (5 tables, 9 categories, 9 entries incl. 1 draft, 0 users), `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
 | 2026-10-13 | 4 | Playwright E2E (`npx tsx scripts/verify-auth.ts`) 8/8 checks against `npm run dev` AND `npm run start` (port 3100): anonymous `/admin` → login redirect, wrong-password error, valid login → dashboard, HttpOnly SameSite=Lax cookie, sign-out → home, signed-out `/admin` → login. Plus `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
 | 2026-10-13 | 5 | Playwright E2E (`npm run verify:crud`) 36/36 checks against prod server (port 3100): anonymous admin routes redirect, POST denied; category/tag create, duplicate-slug inline error, edit, delete, entry counts; entry create (draft), publish → public 200, feature toggle, unpublish → public 404, tag assignment, delete → 404. Auth regression suite still 8/8. Plus `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+| 2026-10-13 | 6 | `npm run lint`, `npm run typecheck`, `npm run build` (18 routes) clean; `npm run verify:auth` 8/8 and `npm run verify:crud` 36/36 against fresh production server on :3100. README rewritten with full setup/deploy/backup docs (verified against actual code: requireAdmin coverage, rate limit 5/10min, bcrypt cost 12, SameSite=Lax, seed onConflictDoNothing). AGENTS.md Definition of Done reviewed | Pass |
+
+Phase 6 notes: the verify suites can trip the login rate limiter when
+run repeatedly against one server instance (5 sign-ins / 10 min per IP);
+a fresh server restart resets it. Documented in the README. No app code
+changed in this phase — documentation only.
 
 Fixes during Phase 5: moved `entryToFormValues` / `EMPTY_ENTRY` /
 `EntryFormInitial` out of the client entry-form component into the shared
