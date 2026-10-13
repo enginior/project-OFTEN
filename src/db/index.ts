@@ -14,6 +14,13 @@ if (!connectionString) {
 
 // maxConnections is low on purpose: serverless platforms open one client
 // per lambda, so a small local pool avoids exhausting Neon/Supabase limits.
-const client = postgres(connectionString, { max: 5, idle_timeout: 20 });
+// prepare: false is required when DATABASE_URL points at a transaction
+// pooler (e.g. Supabase :6543), which cannot cache named prepared statements
+// across physical connections. It is harmless for direct connections.
+const client = postgres(connectionString, {
+  max: 5,
+  idle_timeout: 20,
+  prepare: false,
+});
 
 export const db = drizzle(client, { schema });
