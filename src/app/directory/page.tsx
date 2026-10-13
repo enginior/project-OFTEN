@@ -1,50 +1,62 @@
 import type { Metadata } from "next";
-import { Container } from "@/components/container";
-import { SearchForm } from "@/components/search-form";
+import { EntryListing } from "@/components/entry-listing";
+import { ACCESS_FACETS, DIRECTORY_TYPE_FACETS, MODALITY_FACETS } from "@/lib/labels";
+import { parseEntryFilter } from "@/lib/params";
+import { getCategoryFacets, getTagFacets, listPublicEntries } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "AI Directory",
   description:
-    "Browse a curated directory of AI models, applications, developer tools, hardware, and related resources. Canonical links only.",
+    "A curated directory of AI models, applications, developer tools, hardware, and more. Every entry links to its canonical source.",
   alternates: { canonical: "/directory" },
 };
 
-export default function DirectoryPage() {
+// Filters, sorting, and pagination are database-backed per request; a blocking
+// route is intentional (no shell should stream before data is available).
+export const instant = false;
+
+export default async function DirectoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const raw = await searchParams;
+  const filter = parseEntryFilter(raw, "directory");
+  const [categories, tags] = await Promise.all([
+    getCategoryFacets("directory"),
+    getTagFacets("directory"),
+  ]);
+
   return (
-    <>
-      <section className="border-b border-forge-700">
-        <Container className="py-14">
-          <h1 className="text-4xl text-bone-50">AI Directory</h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ash-300">
-            Models, applications, developer tools, creative tools, hardware,
-            and more. Search and filters arrive with the first entries — the
-            catalogue is being stocked now.
-          </p>
-          <div className="mt-8 max-w-xl">
-            <SearchForm
-              action="/directory"
-              label="Search the AI directory"
-              placeholder="Search the directory…"
-            />
-          </div>
-        </Container>
-      </section>
-      <section aria-labelledby="catalogue-heading">
-        <Container className="py-14">
-          <h2 id="catalogue-heading" className="sr-only">
-            Catalogue
-          </h2>
-          <div className="border border-forge-700 bg-forge-900 p-8 text-center">
-            <p className="font-display text-sm font-semibold tracking-widest text-iron-400 uppercase">
-              Catalogue empty
-            </p>
-            <p className="mt-2 text-sm text-ash-300">
-              No entries have been published yet. Once the first entries are
-              forged, they will be browsable, searchable, and filterable here.
-            </p>
-          </div>
-        </Container>
-      </section>
-    </>
+    <EntryListing
+      section="directory"
+      filter={filter}
+      loadEntries={listPublicEntries}
+      heading="AI Directory"
+      intro="Browse curated AI models, applications, developer tools, creative tools, agents, hardware, and research. Every entry links to its official source."
+      searchPlaceholder="Search models, tools, frameworks…"
+      facetGroups={[
+        {
+          key: "type",
+          label: "Type",
+          options: DIRECTORY_TYPE_FACETS,
+          selected: filter.entryTypes,
+        },
+        {
+          key: "modality",
+          label: "Modality",
+          options: MODALITY_FACETS,
+          selected: filter.modalities,
+        },
+        {
+          key: "access",
+          label: "Access",
+          options: ACCESS_FACETS,
+          selected: filter.access,
+        },
+      ]}
+      categories={categories}
+      tags={tags}
+    />
   );
 }

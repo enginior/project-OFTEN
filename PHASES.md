@@ -29,25 +29,27 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 - [x] Seed script (`npm run db:seed`): demo categories/entries only, no admin credentials, idempotent on slugs
 - [x] Verify: migration applied to clean DB, seed verified via psql (9 categories, 8 published + 1 draft entry, 0 users), `lint`, `typecheck`, `build`
 
-## Phase 3 — Public directory & learn UI `[ ]`
+## Phase 3 — Public directory & learn UI `[x]`
 
-- [ ] `/directory`: keyword search, category/tag/type filters, sort (Featured, Recently added, Recently updated, Alphabetical), pagination
-- [ ] `/directory/[slug]`: entry detail linking to canonical source
-- [ ] `/learn` (+ detail routes): resource-type filters, skill level / access facets
-- [ ] Server-rendered queries returning **published entries only**
-- [ ] Empty, loading, and error states; shareable query params
-- [ ] Sitemap, robots, canonical URLs; no draft/archived leakage
-- [ ] Verify: build, published-only query tests, responsive check
+- [x] `/directory`: keyword search, category/tag/type filters, sort (Featured, Recently added, Recently updated, Alphabetical), pagination
+- [x] `/directory/[slug]`: entry detail linking to canonical source
+- [x] `/learn` (+ detail routes): resource-type filters, skill level / access facets
+- [x] Server-rendered queries returning **published entries only**
+- [x] Empty, loading, and error states; shareable query params
+- [x] Sitemap, robots, canonical URLs; no draft/archived leakage
+- [x] Verify: build, published-only query tests, responsive check
 
 ## Phase 4 — Admin authentication `[ ]`
 
-- [ ] Single-admin auth via established solution (Auth.js or equivalent)
-- [ ] Secure HttpOnly, SameSite cookies; Secure in production
-- [ ] Server-side session checks on every admin page and mutation route
-- [ ] Password hashing with modern library (never plaintext)
-- [ ] Rate-limited login endpoint
-- [ ] `/admin/login` page; middleware/redirects for unauthenticated access
-- [ ] Verify: anonymous access blocked to `/admin*`, auth unit tests
+- [x] Single-admin auth via established solution (jose HS256 JWT + bcryptjs)
+- [x] Secure HttpOnly, SameSite cookies; Secure in production
+- [x] Server-side session checks on every admin page and mutation route (`requireAdmin`)
+- [x] Password hashing with modern library (bcryptjs, cost 12)
+- [x] Rate-limited login endpoint (in-memory sliding window)
+- [x] `/admin/login` page; `src/proxy.ts` edge guard for unauthenticated `/admin*`
+- [x] Admin dashboard shell at `src/app/admin/(dashboard)/`
+- [x] One-time admin CLI (`npm run admin:create`) — never seeded
+- [ ] Verify: anonymous access blocked to `/admin*`, login round-trip, lint/typecheck/build
 
 ## Phase 5 — Admin CRUD `[ ]`
 
@@ -81,3 +83,8 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 Fixes during Phase 2: replaced malformed `drizzle.config.ts` (exported a raw
 string instead of `defineConfig`, which broke drizzle-kit); corrected seed
 types to use Drizzle pgEnum value types instead of plain strings.
+
+Phase 4 note: `bash` tool intermittently wedged during this phase, so
+`npm install` of `bcryptjs`/`jose` and the lint/typecheck/build verification
+still need to be run manually. Files are complete; Auth secret is
+`AUTH_SECRET` (see `.env.example`).

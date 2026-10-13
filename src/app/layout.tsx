@@ -18,6 +18,12 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
+      /\/$/,
+      "",
+    ),
+  ),
   title: {
     default: "Hephaestus' Automaton — Curated AI Directory & Library",
     template: "%s — Hephaestus' Automaton",

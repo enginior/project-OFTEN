@@ -1,50 +1,62 @@
 import type { Metadata } from "next";
-import { Container } from "@/components/container";
-import { SearchForm } from "@/components/search-form";
+import { EntryListing } from "@/components/entry-listing";
+import { ACCESS_FACETS, LEARN_RESOURCE_TYPE_FACETS, SKILL_LEVEL_FACETS } from "@/lib/labels";
+import { parseEntryFilter } from "@/lib/params";
+import { getCategoryFacets, getTagFacets, listPublicEntries } from "@/lib/queries";
 
 export const metadata: Metadata = {
   title: "Learn & Upskill",
   description:
-    "A curated index of AI education and technical references: documentation, courses, books, research papers, benchmarks, and datasets.",
+    "A curated index of AI education and technical references: documentation, courses, tutorials, books, papers, benchmarks, and datasets.",
   alternates: { canonical: "/learn" },
 };
 
-export default function LearnPage() {
+// Filters, sorting, and pagination are database-backed per request; a blocking
+// route is intentional (no shell should stream before data is available).
+export const instant = false;
+
+export default async function LearnPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const raw = await searchParams;
+  const filter = parseEntryFilter(raw, "learn");
+  const [categories, tags] = await Promise.all([
+    getCategoryFacets("learn"),
+    getTagFacets("learn"),
+  ]);
+
   return (
-    <>
-      <section className="border-b border-forge-700">
-        <Container className="py-14">
-          <h1 className="text-4xl text-bone-50">Learn &amp; Upskill</h1>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ash-300">
-            Documentation, courses, tutorials, books, research papers,
-            benchmarks, and datasets — indexed, not copied. Every resource
-            links to its canonical home.
-          </p>
-          <div className="mt-8 max-w-xl">
-            <SearchForm
-              action="/learn"
-              label="Search learning resources"
-              placeholder="Search courses, papers, docs…"
-            />
-          </div>
-        </Container>
-      </section>
-      <section aria-labelledby="library-heading">
-        <Container className="py-14">
-          <h2 id="library-heading" className="sr-only">
-            Resource library
-          </h2>
-          <div className="border border-forge-700 bg-forge-900 p-8 text-center">
-            <p className="font-display text-sm font-semibold tracking-widest text-iron-400 uppercase">
-              Library empty
-            </p>
-            <p className="mt-2 text-sm text-ash-300">
-              No learning resources have been published yet. The first batch
-              will be indexed here shortly.
-            </p>
-          </div>
-        </Container>
-      </section>
-    </>
+    <EntryListing
+      section="learn"
+      filter={filter}
+      loadEntries={listPublicEntries}
+      heading="Learn & upskill"
+      intro="A curated index of AI education and technical references — official documentation, courses, tutorials, books, papers, benchmarks, and datasets. We link to the source; we never copy the content."
+      searchPlaceholder="Search courses, papers, documentation…"
+      facetGroups={[
+        {
+          key: "resource",
+          label: "Resource type",
+          options: LEARN_RESOURCE_TYPE_FACETS,
+          selected: filter.resourceTypes,
+        },
+        {
+          key: "level",
+          label: "Level",
+          options: SKILL_LEVEL_FACETS,
+          selected: filter.skillLevels,
+        },
+        {
+          key: "access",
+          label: "Access",
+          options: ACCESS_FACETS,
+          selected: filter.access,
+        },
+      ]}
+      categories={categories}
+      tags={tags}
+    />
   );
 }
