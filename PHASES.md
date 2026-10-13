@@ -51,15 +51,15 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 - [x] One-time admin CLI (`npm run admin:create`) — never seeded
 - [x] Verify: Playwright E2E (`scripts/verify-auth.ts`) — 8/8 pass on dev and production builds
 
-## Phase 5 — Admin CRUD `[ ]`
+## Phase 5 — Admin CRUD `[x]`
 
-- [ ] `/admin` dashboard; `/admin/entries` management list
-- [ ] Create / edit / publish / unpublish / archive / delete entries (confirmed deletion)
-- [ ] `/admin/categories` and `/admin/tags` taxonomy management
-- [ ] Featured toggle for editorial curation
-- [ ] Server-side validation on every mutation (Zod), CSRF protection
-- [ ] Clear success/error feedback; no stack traces or DB details exposed
-- [ ] Verify: CRUD integration tests, authorization tests, lint/typecheck/build
+- [x] `/admin` dashboard; `/admin/entries` management list
+- [x] Create / edit / publish / unpublish / archive / delete entries (confirmed deletion)
+- [x] `/admin/categories` and `/admin/tags` taxonomy management
+- [x] Featured toggle for editorial curation
+- [x] Server-side validation on every mutation (Zod), CSRF protection
+- [x] Clear success/error feedback; no stack traces or DB details exposed
+- [x] Verify: CRUD integration tests, authorization tests, lint/typecheck/build
 
 ## Phase 6 — Deployment & documentation `[ ]`
 
@@ -80,6 +80,18 @@ Status legend: `[ ]` pending · `[~]` in progress · `[x]` complete
 | 2026-10-13 | 1 | `npm run lint`, `npm run typecheck`, `npm run build`, prod-server smoke test (all routes 200) | Pass |
 | 2026-10-13 | 2 | `npm run db:generate`, `npm run db:migrate` on clean DB, `npm run db:seed` (re-run safe), psql verification (5 tables, 9 categories, 9 entries incl. 1 draft, 0 users), `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
 | 2026-10-13 | 4 | Playwright E2E (`npx tsx scripts/verify-auth.ts`) 8/8 checks against `npm run dev` AND `npm run start` (port 3100): anonymous `/admin` → login redirect, wrong-password error, valid login → dashboard, HttpOnly SameSite=Lax cookie, sign-out → home, signed-out `/admin` → login. Plus `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+| 2026-10-13 | 5 | Playwright E2E (`npm run verify:crud`) 36/36 checks against prod server (port 3100): anonymous admin routes redirect, POST denied; category/tag create, duplicate-slug inline error, edit, delete, entry counts; entry create (draft), publish → public 200, feature toggle, unpublish → public 404, tag assignment, delete → 404. Auth regression suite still 8/8. Plus `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+
+Fixes during Phase 5: moved `entryToFormValues` / `EMPTY_ENTRY` /
+`EntryFormInitial` out of the client entry-form component into the shared
+server-safe module `src/components/admin/entry-form-values.ts` (fixes an
+SSR error when a client component imported server-only helpers); added
+`export const instant = false` on `/directory/[slug]` to satisfy Cache
+Components instant-navigation validation; set `maxRedirects: 0` on the
+anonymous POST assertions in `verify-crud.ts` so the 307 login redirect is
+asserted correctly. Added `scripts/verify-crud.ts` and the `verify:crud`
+npm script; added a GitHub Actions CI workflow (lint → typecheck → build,
+no database needed since all routes are dynamic).
 
 Fixes during Phase 4: `form action={fn}` on the login form turned a
 pre-hydration submit into a native POST the browser could not follow;
