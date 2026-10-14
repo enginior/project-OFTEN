@@ -1,7 +1,13 @@
 import postgres from "postgres";
 
 async function main() {
-  const sql = postgres(process.env.DATABASE_URL, { prepare: false });
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error(
+      "DATABASE_URL is not set. Copy .env.example to .env and configure it."
+    );
+  }
+  const sql = postgres(connectionString, { prepare: false });
   const rows = await sql`
     select relname, relrowsecurity as rls, relforcerowsecurity as forced
     from pg_class
