@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const NAV_ITEMS = [
@@ -16,12 +17,14 @@ export function SiteHeader() {
           href="/"
           className="flex items-center gap-3 no-underline focus-visible:outline-2"
         >
-          <span
-            aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center border border-ember-600 bg-ember-500 font-display text-lg font-bold text-forge-950"
-          >
-            H
-          </span>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={36}
+            height={36}
+            priority
+            className="size-9 shrink-0 border border-ember-600"
+          />
           <span className="font-display text-lg font-bold tracking-wide text-bone-50 uppercase">
             Hephaestus&apos; Automaton
           </span>

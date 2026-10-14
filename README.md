@@ -128,6 +128,49 @@ password, and no sign-up path.
 
 ## 6. Deploying to Vercel
 
+### Deployment architecture
+
+```mermaid
+flowchart LR
+    subgraph local["Your machine (one-time setup)"]
+        dev["Developer terminal<br/>npm run db:migrate<br/>npm run admin:create"]
+    end
+
+    subgraph vcs["GitHub"]
+        repo["Repository (main branch)"]
+    end
+
+    subgraph vercel["Vercel (hosting)"]
+        edge["Edge CDN<br/>static pages, public assets"]
+        fn["Next.js serverless functions<br/>SSR pages, search, admin auth + CRUD"]
+    end
+
+    subgraph db["Managed Postgres (Neon or Supabase)"]
+        pg[("PostgreSQL<br/>entries, categories, tags, admins")]
+    end
+
+    visitor["Public visitor"] --> edge
+    visitor --> fn
+    admin["Admin (browser)"] --> fn
+
+    repo -- "push to main triggers build" --> vercel
+    fn -- "pooled connection string<br/>(port 6543 / pgbouncer)" --> pg
+    dev -- "direct connection string<br/>(port 5432, migrations + admin)" --> pg
+    pg -. "schema + content" .-> fn
+```
+
+Connections and secrets:
+
+- **Runtime (`DATABASE_URL`)** — the app uses the **pooled** connection
+  string; Vercel serverless functions open many short-lived connections
+  and the pooler keeps you under Postgres connection limits.
+- **Admin tasks (`db:migrate`, `db:seed`, `admin:create`)** — run
+  locally against the **direct** connection string; DDL and script
+  access don't need the pooler.
+- `AUTH_SECRET` and `DATABASE_URL` live only in Vercel env vars (and
+  your local `.env.local`, which is git-ignored). They are never
+  committed or exposed to the client bundle.
+
 1. **Create the managed database.** In Neon (or Supabase), create a
    project and copy the **pooled** connection string
    (`postgres://...-pooler.../neondb?sslmode=require`). Keep it secret.
